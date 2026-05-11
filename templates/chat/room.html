@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chat with {{ other_user.username }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Nunito',sans-serif;background:#111b21;height:100vh;overflow:hidden;display:flex}
+  .sidebar{width:380px;min-width:320px;background:#111b21;border-right:1px solid #2a3942;display:flex;flex-direction:column;height:100vh}
+  .sidebar-header{background:#202c33;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+  .user-info{display:flex;align-items:center;gap:10px}
+  .avatar{width:40px;height:40px;border-radius:50%;background:#00a884;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;font-size:16px;text-transform:uppercase;position:relative}
+  .online-dot{width:10px;height:10px;background:#25d366;border-radius:50%;position:absolute;bottom:1px;right:1px;border:2px solid #202c33}
+  .offline-dot{width:10px;height:10px;background:#8696a0;border-radius:50%;position:absolute;bottom:1px;right:1px;border:2px solid #202c33}
+  .user-name{color:#e9edef;font-size:15px;font-weight:700}
+  .icon-btn{background:none;border:none;cursor:pointer;padding:8px;border-radius:50%;color:#aebac1;transition:.2s;display:flex;align-items:center;justify-content:center}
+  .icon-btn:hover{background:#2a3942;color:#e9edef}
+  .icon-btn svg{width:22px;height:22px}
+  .search-wrap{padding:8px 12px}
+  .search-box{display:flex;align-items:center;background:#202c33;border-radius:10px;padding:8px 14px;gap:10px}
+  .search-box svg{color:#8696a0;flex-shrink:0;width:18px;height:18px}
+  .search-box input{background:none;border:none;outline:none;color:#e9edef;font-size:14px;font-family:'Nunito',sans-serif;width:100%}
+  .search-box input::placeholder{color:#8696a0}
+  .contacts-label{padding:8px 16px 4px;color:#8696a0;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+  .contacts{overflow-y:auto;flex:1}
+  .contacts::-webkit-scrollbar{width:4px}
+  .contacts::-webkit-scrollbar-thumb{background:#2a3942;border-radius:4px}
+  .contact-item{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;transition:.15s;border-bottom:1px solid #1e2c33;text-decoration:none}
+  .contact-item:hover,.contact-item.active{background:#2a3942}
+  .contact-info{flex:1;min-width:0}
+  .contact-name{color:#e9edef;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .contact-last{color:#8696a0;font-size:13px;margin-top:2px}
+
+  /* CHAT */
+  .chat-area{flex:1;display:flex;flex-direction:column;height:100vh;background:#0b141a}
+  .chat-header{background:#202c33;padding:12px 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #2a3942;flex-shrink:0}
+  .header-user{flex:1}
+  .header-name{color:#e9edef;font-size:16px;font-weight:700}
+  .header-status{font-size:12px;margin-top:1px}
+  .status-online{color:#25d366}
+  .status-offline{color:#8696a0}
+
+  /* MESSAGES */
+  .messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:4px;
+    background-image:url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z' fill='%231a2a33' fill-opacity='0.5' fill-rule='evenodd'/%3E%3C/svg%3E")}
+  .messages::-webkit-scrollbar{width:5px}
+  .messages::-webkit-scrollbar-thumb{background:#2a3942;border-radius:5px}
+
+  /* BUBBLE */
+  .msg-row{display:flex;margin-bottom:2px;position:relative}
+  .msg-row.sent{justify-content:flex-end}
+  .msg-row.received{justify-content:flex-start}
+  .bubble{max-width:65%;padding:8px 12px 6px;border-radius:8px;word-break:break-word;position:relative}
+  .msg-row.sent .bubble{background:#005c4b;border-bottom-right-radius:2px}
+  .msg-row.received .bubble{background:#202c33;border-bottom-left-radius:2px}
+  .bubble .text{color:#e9edef;font-size:14.5px;line-height:1.5}
+  .bubble .meta{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:3px}
+  .bubble .time{color:#8696a0;font-size:11px}
+  .ticks{font-size:14px;line-height:1}
+  .ticks.grey{color:#8696a0}
+  .ticks.blue{color:#53bdeb}
+  .bubble img{max-width:100%;border-radius:6px;cursor:pointer;max-height:240px;object-fit:cover;display:block}
+  .file-bubble{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border-radius:8px;padding:8px 10px}
+  .file-bubble svg{color:#8696a0;flex-shrink:0}
+  .file-name{color:#e9edef;font-size:13px;word-break:break-all}
+  .file-link{color:#53bdeb;font-size:11px;text-decoration:none}
+  .deleted-msg{color:#8696a0;font-size:13px;font-style:italic}
+  .deleted-msg svg{display:inline;vertical-align:middle;margin-right:4px;opacity:.6}
+
+  /* DATE */
+  .date-divider{display:flex;align-items:center;justify-content:center;margin:12px 0}
+  .date-divider span{background:#182229;color:#8696a0;font-size:12px;padding:4px 12px;border-radius:8px;font-weight:600}
+
+  /* DELETE CONTEXT MENU */
+  .ctx-menu{position:fixed;background:#233138;border-radius:10px;padding:6px 0;box-shadow:0 4px 24px rgba(0,0,0,.5);z-index:999;min-width:180px;display:none}
+  .ctx-menu.open{display:block}
+  .ctx-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:#e9edef;font-size:14px;transition:.15s;border:none;background:none;width:100%;text-align:left}
+  .ctx-item:hover{background:#2a3942}
+  .ctx-item.danger{color:#ff4757}
+  .ctx-item svg{width:18px;height:18px;flex-shrink:0}
+
+  /* INPUT */
+  .input-area{background:#202c33;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative}
+  .attach-menu{position:absolute;bottom:70px;left:60px;background:#233138;border-radius:12px;padding:8px;display:none;flex-direction:column;gap:4px;box-shadow:0 4px 20px rgba(0,0,0,.4);z-index:10}
+  .attach-menu.open{display:flex}
+  .attach-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#e9edef;font-size:14px;border:none;background:none;width:100%;text-align:left;transition:.15s}
+  .attach-opt:hover{background:#2a3942}
+  .attach-opt svg{width:20px;height:20px}
+  .opt-img{color:#bf59cf}
+  .opt-cam{color:#0fbcf9}
+  .opt-file{color:#f9ca24}
+  .emoji-btn,.attach-btn{background:none;border:none;cursor:pointer;padding:8px;color:#8696a0;transition:.2s;display:flex;align-items:center;justify-content:center;border-radius:50%}
+  .emoji-btn:hover,.attach-btn:hover{color:#e9edef}
+  .emoji-btn svg,.attach-btn svg{width:24px;height:24px}
+  .msg-input{flex:1;background:#2a3942;border:none;border-radius:10px;padding:10px 16px;color:#e9edef;font-size:15px;font-family:'Nunito',sans-serif;outline:none;resize:none;max-height:120px;line-height:1.4}
+  .msg-input::placeholder{color:#8696a0}
+  .send-btn{background:#00a884;border:none;cursor:pointer;padding:10px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;transition:.2s;width:44px;height:44px;flex-shrink:0}
+  .send-btn:hover{background:#02c39a;transform:scale(1.05)}
+  .send-btn svg{width:22px;height:22px}
+
+  /* CAMERA */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .cam-container{position:relative;border-radius:16px;overflow:hidden;max-width:500px;width:90%}
+  #cameraFeed{width:100%;border-radius:12px;background:#000}
+  #captureCanvas{display:none}
+  #previewImg{display:none;width:100%;border-radius:12px;max-height:400px;object-fit:cover}
+  .cam-controls{display:flex;gap:16px;margin-top:16px;justify-content:center}
+  .cam-btn{background:#2a3942;border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e9edef;transition:.2s}
+  .cam-btn:hover{background:#3a4f5c}
+  .cam-btn.capture{background:#00a884;width:68px;height:68px}
+  .cam-btn.capture:hover{background:#02c39a}
+  .cam-btn svg{width:26px;height:26px}
+  .cam-btn.capture svg{width:30px;height:30px}
+  .cam-label{color:#8696a0;font-size:12px;text-align:center;margin-top:8px}
+
+  /* LIGHTBOX */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:200;display:none;align-items:center;justify-content:center}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
+  .lightbox-close{position:absolute;top:20px;right:24px;color:#fff;font-size:28px;cursor:pointer;background:none;border:none}
+
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="user-info">
+      <div class="avatar">{{ request.user.username|slice:":1" }}<span class="online-dot"></span></div>
+      <span class="user-name">{{ request.user.username }}</span>
+    </div>
+    <div style="display:flex;gap:4px">
+      <a href="{% url 'index' %}" class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+      <a href="{% url 'logout' %}" class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></a>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search or start new chat"/>
+    </div>
+  </div>
+  <div class="contacts-label">Chats</div>
+  <div class="contacts">
+    <a href="{% url 'index' %}" class="contact-item">
+      <div class="avatar" style="background:#8696a0">←</div>
+      <div class="contact-info"><div class="contact-name">← All Chats</div></div>
+    </a>
+    <div class="contact-item active">
+      <div class="avatar">{{ other_user.username|slice:":1" }}
+        {% if is_online %}<span class="online-dot"></span>{% else %}<span class="offline-dot"></span>{% endif %}
+      </div>
+      <div class="contact-info">
+        <div class="contact-name">{{ other_user.username }}</div>
+        <div class="contact-last">{% if is_online %}online{% else %}offline{% endif %}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT AREA -->
+<div class="chat-area">
+  <div class="chat-header">
+    <div class="avatar">{{ other_user.username|slice:":1" }}
+      {% if is_online %}<span class="online-dot"></span>{% else %}<span class="offline-dot"></span>{% endif %}
+    </div>
+    <div class="header-user">
+      <div class="header-name">{{ other_user.username }}</div>
+      <div class="header-status {% if is_online %}status-online{% else %}status-offline{% endif %}" id="headerStatus">
+        {% if is_online %}online{% else %}last seen recently{% endif %}
+      </div>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+      <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="messages" id="messageContainer">
+    <div class="date-divider"><span>Today</span></div>
+    {% for msg in messages %}
+    <div class="msg-row {% if msg.sender == current_user %}sent{% else %}received{% endif %}" data-id="{{ msg.id }}" data-sender="{{ msg.sender.id }}">
+      <div class="bubble">
+        {% if msg.deleted_for_everyone %}
+          <div class="deleted-msg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            This message was deleted
+          </div>
+        {% elif msg.message_type == 'image' and msg.file_url %}
+          <img src="{{ msg.file_url }}" onclick="openLightbox(this.src)" alt="image"/>
+        {% elif msg.message_type == 'file' and msg.file_url %}
+          <div class="file-bubble">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div><div class="file-name">{{ msg.content }}</div><a class="file-link" href="{{ msg.file_url }}" download>Download</a></div>
+          </div>
+        {% else %}
+          <div class="text">{{ msg.content }}</div>
+        {% endif %}
+        <div class="meta">
+          <span class="time">{{ msg.timestamp|time:"H:i" }}</span>
+          {% if msg.sender == current_user %}<span class="ticks {% if msg.is_read %}blue{% else %}grey{% endif %}">✓✓</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-area">
+    <div class="attach-menu" id="attachMenu">
+      <button class="attach-opt" onclick="document.getElementById('imageInput').click()">
+        <svg class="opt-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Photo & Video
+      </button>
+      <button class="attach-opt" onclick="openCamera()">
+        <svg class="opt-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Camera
+      </button>
+      <button class="attach-opt" onclick="document.getElementById('fileInput').click()">
+        <svg class="opt-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Document
+      </button>
+    </div>
+    <input type="file" id="imageInput" accept="image/*,video/*" onchange="uploadFile(this,'image')"/>
+    <input type="file" id="fileInput" onchange="uploadFile(this,'file')"/>
+    <button class="emoji-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
+    <button class="attach-btn" id="attachToggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+    <textarea class="msg-input" id="msgInput" placeholder="Type a message" rows="1"></textarea>
+    <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+</div>
+
+<!-- CONTEXT MENU (right-click / long press) -->
+<div class="ctx-menu" id="ctxMenu">
+  <button class="ctx-item" id="ctxDeleteMe">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+    Delete for Me
+  </button>
+  <button class="ctx-item danger" id="ctxDeleteAll" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+    Delete for Everyone
+  </button>
+</div>
+
+<!-- CAMERA MODAL -->
+<div class="modal-overlay" id="cameraModal">
+  <div class="cam-container">
+    <video id="cameraFeed" autoplay playsinline></video>
+    <canvas id="captureCanvas"></canvas>
+    <img id="previewImg" alt="preview"/>
+  </div>
+  <div class="cam-controls" id="camControls">
+    <button class="cam-btn" onclick="closeCamera()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <button class="cam-btn capture" onclick="capturePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+  </div>
+  <div class="cam-controls" id="previewControls" style="display:none">
+    <button class="cam-btn" onclick="retakePhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg></button>
+    <button class="cam-btn capture" onclick="sendCapturedPhoto()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+  <div class="cam-label" id="camLabel">Point camera and tap capture</div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close">✕</button>
+  <img id="lightboxImg" src="" alt=""/>
+</div>
+
+<script>
+  const roomName  = "{{ room_name }}";
+  const currentId = {{ current_user.id }};
+  const container = document.getElementById('messageContainer');
+  const input     = document.getElementById('msgInput');
+  let ctxMsgId = null, ctxIsMine = false;
+
+  function scrollBottom(){ container.scrollTop = container.scrollHeight; }
+  scrollBottom();
+
+  const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
+  ws.onopen = () => ws.send(JSON.stringify({type:'read_receipt'}));
+
+  ws.onmessage = function(e){
+    const data = JSON.parse(e.data);
+    if(data.type === 'user_status'){
+      const s = document.getElementById('headerStatus');
+      s.textContent = data.is_online ? 'online' : 'last seen recently';
+      s.className = 'header-status '+(data.is_online?'status-online':'status-offline');
+      return;
+    }
+    if(data.type === 'read_receipt'){
+      if(data.reader_id !== currentId)
+        document.querySelectorAll('.msg-row.sent .ticks').forEach(t=>{t.classList.remove('grey');t.classList.add('blue');});
+      return;
+    }
+    if(data.type === 'delete_for_me'){
+      const row = document.querySelector(`.msg-row[data-id="${data.msg_id}"]`);
+      if(row) row.remove();
+      return;
+    }
+    if(data.type === 'delete_for_everyone'){
+      const row = document.querySelector(`.msg-row[data-id="${data.msg_id}"]`);
+      if(row){
+        const bubble = row.querySelector('.bubble');
+        const meta   = bubble.querySelector('.meta');
+        bubble.innerHTML = '';
+        bubble.innerHTML = `<div class="deleted-msg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>This message was deleted</div>`;
+        bubble.appendChild(meta||document.createElement('div'));
+      }
+      return;
+    }
+    if(data.type === 'chat_message'){
+      const isSent = data.sender_id === currentId;
+      appendMessage(data.message, data.file_url, data.msg_type, isSent, data.msg_id, data.sender_id);
+      if(!isSent) ws.send(JSON.stringify({type:'read_receipt'}));
+    }
+  };
+
+  function appendMessage(text, fileUrl, msgType, isSent, msgId, senderId){
+    const now  = new Date();
+    const time = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    const row  = document.createElement('div');
+    row.className = `msg-row ${isSent?'sent':'received'}`;
+    row.dataset.id     = msgId;
+    row.dataset.sender = senderId || (isSent ? currentId : 0);
+    let content = '';
+    if(msgType==='image'&&fileUrl)
+      content = `<img src="${fileUrl}" onclick="openLightbox('${fileUrl}')" alt="image"/>`;
+    else if(msgType==='file'&&fileUrl){
+      const fname = fileUrl.split('/').pop();
+      content = `<div class="file-bubble"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div><div class="file-name">${escapeHtml(text||fname)}</div><a class="file-link" href="${fileUrl}" download>Download</a></div></div>`;
+    } else content = `<div class="text">${escapeHtml(text)}</div>`;
+    row.innerHTML = `<div class="bubble">${content}<div class="meta"><span class="time">${time}</span>${isSent?'<span class="ticks grey">✓✓</span>':''}</div></div>`;
+    container.appendChild(row);
+    scrollBottom();
+  }
+
+  // SEND MESSAGE
+  function sendMessage(){
+    const msg = input.value.trim();
+    if(!msg) return;
+    ws.send(JSON.stringify({type:'text', message:msg}));
+    input.value=''; input.style.height='auto';
+  }
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} });
+  input.addEventListener('input', function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px'; });
+
+  // ATTACH MENU
+  document.getElementById('attachToggle').addEventListener('click', function(e){
+    e.stopPropagation(); document.getElementById('attachMenu').classList.toggle('open');
+  });
+  document.addEventListener('click', ()=>{
+    document.getElementById('attachMenu').classList.remove('open');
+    closeCtxMenu();
+  });
+
+  // FILE UPLOAD
+  async function uploadFile(inp, type){
+    document.getElementById('attachMenu').classList.remove('open');
+    const file = inp.files[0]; if(!file) return;
+    const fd = new FormData(); fd.append('file', file);
+    const res  = await fetch('/upload/', {method:'POST', body:fd, headers:{'X-CSRFToken':getCookie('csrftoken')}});
+    const data = await res.json();
+    if(data.url) ws.send(JSON.stringify({type:type, message:file.name, file_url:data.url}));
+    inp.value='';
+  }
+
+  // CONTEXT MENU — right click or long press
+  const ctxMenu = document.getElementById('ctxMenu');
+
+  function showCtxMenu(e, msgId, isMine){
+    e.preventDefault();
+    ctxMsgId = msgId; ctxIsMine = isMine;
+    document.getElementById('ctxDeleteAll').style.display = isMine ? 'flex' : 'none';
+    const x = Math.min(e.clientX||e.touches?.[0]?.clientX||0, window.innerWidth-200);
+    const y = Math.min(e.clientY||e.touches?.[0]?.clientY||0, window.innerHeight-120);
+    ctxMenu.style.left = x+'px';
+    ctxMenu.style.top  = y+'px';
+    ctxMenu.classList.add('open');
+  }
+
+  function closeCtxMenu(){ ctxMenu.classList.remove('open'); ctxMsgId=null; }
+
+  // Attach right-click to existing messages
+  document.querySelectorAll('.msg-row').forEach(attachCtx);
+
+  function attachCtx(row){
+    const msgId  = row.dataset.id;
+    const isMine = parseInt(row.dataset.sender) === currentId;
+    row.addEventListener('contextmenu', e => showCtxMenu(e, msgId, isMine));
+    // Long press for mobile
+    let timer;
+    row.addEventListener('touchstart', e=>{ timer=setTimeout(()=>showCtxMenu(e,msgId,isMine),600); });
+    row.addEventListener('touchend',   ()=>clearTimeout(timer));
+  }
+
+  // Delete for Me
+  document.getElementById('ctxDeleteMe').addEventListener('click', function(){
+    if(!ctxMsgId) return;
+    ws.send(JSON.stringify({type:'delete_for_me', msg_id:ctxMsgId}));
+    closeCtxMenu();
+  });
+
+  // Delete for Everyone
+  document.getElementById('ctxDeleteAll').addEventListener('click', function(){
+    if(!ctxMsgId) return;
+    ws.send(JSON.stringify({type:'delete_for_everyone', msg_id:ctxMsgId}));
+    closeCtxMenu();
+  });
+
+  // CAMERA
+  let stream=null, capturedBlob=null;
+  async function openCamera(){
+    document.getElementById('attachMenu').classList.remove('open');
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+      document.getElementById('cameraFeed').srcObject = stream;
+      document.getElementById('cameraFeed').style.display = 'block';
+      document.getElementById('previewImg').style.display = 'none';
+      document.getElementById('camControls').style.display = 'flex';
+      document.getElementById('previewControls').style.display = 'none';
+      document.getElementById('camLabel').textContent = 'Point camera and tap capture';
+      document.getElementById('cameraModal').classList.add('open');
+    }catch(err){ alert('Camera error: '+err.message); }
+  }
+  function capturePhoto(){
+    const video=document.getElementById('cameraFeed'), canvas=document.getElementById('captureCanvas');
+    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    canvas.getContext('2d').drawImage(video,0,0);
+    canvas.toBlob(function(blob){
+      capturedBlob=blob;
+      document.getElementById('previewImg').src=URL.createObjectURL(blob);
+      document.getElementById('previewImg').style.display='block';
+      document.getElementById('cameraFeed').style.display='none';
+      document.getElementById('camControls').style.display='none';
+      document.getElementById('previewControls').style.display='flex';
+      document.getElementById('camLabel').textContent='Preview — send or retake';
+      if(stream) stream.getTracks().forEach(t=>t.stop());
+    },'image/jpeg',0.9);
+  }
+  function retakePhoto(){ capturedBlob=null; openCamera(); }
+  async function sendCapturedPhoto(){
+    if(!capturedBlob) return;
+    const fd=new FormData(); fd.append('file',capturedBlob,`photo_${Date.now()}.jpg`);
+    const res=await fetch('/upload/',{method:'POST',body:fd,headers:{'X-CSRFToken':getCookie('csrftoken')}});
+    const data=await res.json();
+    if(data.url) ws.send(JSON.stringify({type:'image',message:'',file_url:data.url}));
+    closeCamera();
+  }
+  function closeCamera(){
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream=null; capturedBlob=null;
+    document.getElementById('cameraModal').classList.remove('open');
+  }
+
+  function openLightbox(src){ document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').classList.add('open'); }
+  function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); }
+  function escapeHtml(t){ const d=document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }
+  function getCookie(n){ let v=null; document.cookie.split(';').forEach(c=>{ const[k,val]=c.trim().split('='); if(k===n)v=decodeURIComponent(val); }); return v; }
+</script>
+</body>
+</html>

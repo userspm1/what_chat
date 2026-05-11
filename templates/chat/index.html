@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WhatsApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Nunito',sans-serif;background:#111b21;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .app{display:flex;width:100%;max-width:1400px;height:100vh;background:#111b21}
+
+  /* SIDEBAR */
+  .sidebar{width:400px;min-width:340px;background:#111b21;border-right:1px solid #2a3942;display:flex;flex-direction:column;height:100vh}
+  .sidebar-header{background:#202c33;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+  .user-info{display:flex;align-items:center;gap:12px}
+  .avatar{width:40px;height:40px;border-radius:50%;background:#00a884;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;text-transform:uppercase}
+  .avatar.lg{width:48px;height:48px;font-size:20px}
+  .user-name{color:#e9edef;font-size:16px;font-weight:700}
+  .header-icons{display:flex;gap:4px}
+  .icon-btn{background:none;border:none;cursor:pointer;padding:8px;border-radius:50%;color:#aebac1;transition:.2s;display:flex;align-items:center;justify-content:center}
+  .icon-btn:hover{background:#2a3942;color:#e9edef}
+  .icon-btn svg{width:22px;height:22px}
+
+  /* SEARCH */
+  .search-wrap{padding:8px 12px;background:#111b21}
+  .search-box{display:flex;align-items:center;background:#202c33;border-radius:10px;padding:8px 14px;gap:10px}
+  .search-box svg{color:#8696a0;flex-shrink:0;width:18px;height:18px}
+  .search-box input{background:none;border:none;outline:none;color:#e9edef;font-size:14px;font-family:'Nunito',sans-serif;width:100%}
+  .search-box input::placeholder{color:#8696a0}
+
+  /* CONTACTS */
+  .contacts-label{padding:8px 16px 4px;color:#8696a0;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+  .contacts{overflow-y:auto;flex:1}
+  .contacts::-webkit-scrollbar{width:4px}
+  .contacts::-webkit-scrollbar-thumb{background:#2a3942;border-radius:4px}
+  .contact-item{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;transition:.15s;border-bottom:1px solid #1e2c33;text-decoration:none}
+  .contact-item:hover{background:#202c33}
+  .contact-info{flex:1;min-width:0}
+  .contact-top{display:flex;justify-content:space-between;align-items:center}
+  .contact-name{color:#e9edef;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .contact-time{color:#8696a0;font-size:11px;white-space:nowrap}
+  .contact-last{color:#8696a0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+
+  /* MAIN AREA */
+  .main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#222e35;position:relative}
+  .main::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232a3942' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");opacity:.3}
+  .welcome{text-align:center;z-index:1;padding:40px}
+  .welcome svg{width:80px;height:80px;margin-bottom:24px;opacity:.6}
+  .welcome h2{color:#e9edef;font-size:26px;font-weight:700;margin-bottom:12px}
+  .welcome p{color:#8696a0;font-size:14px;max-width:360px;line-height:1.6}
+  .lock-icon{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;color:#8696a0;font-size:12px}
+  .lock-icon svg{width:14px;height:14px}
+
+  /* EMPTY STATE */
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:#8696a0;text-align:center}
+  .empty svg{width:64px;height:64px;opacity:.4;margin-bottom:16px}
+  .empty p{font-size:14px}
+
+  @media(max-width:768px){
+    .sidebar{width:100%;min-width:unset}
+    .main{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="user-info">
+        <div class="avatar">{{ request.user.username|slice:":1" }}</div>
+        <span class="user-name">{{ request.user.username }}</span>
+      </div>
+      <div class="header-icons">
+        <a href="{% url 'logout' %}" class="icon-btn" title="Logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" placeholder="Search or start new chat" id="searchInput"/>
+      </div>
+    </div>
+
+    <div class="contacts-label">Chats</div>
+
+    <div class="contacts" id="contactList">
+      {% if contacts %}
+        {% for c in contacts %}
+        <a href="{% url 'room' c.room %}" class="contact-item">
+          <div class="avatar">{{ c.user.username|slice:":1" }}</div>
+          <div class="contact-info">
+            <div class="contact-top">
+              <span class="contact-name">{{ c.user.username }}</span>
+              {% if c.last_message %}
+              <span class="contact-time">{{ c.last_message.timestamp|time:"H:i" }}</span>
+              {% endif %}
+            </div>
+            <div class="contact-last">
+              {% if c.last_message %}{{ c.last_message.content|truncatechars:35 }}{% else %}Start a conversation{% endif %}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <p>No contacts yet.<br/>Register more users to chat!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- MAIN WELCOME AREA -->
+  <div class="main">
+    <div class="welcome">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="24" fill="#00a884"/>
+        <path d="M24 10C16.27 10 10 16.27 10 24c0 2.49.67 4.82 1.84 6.84L10 38l7.37-1.81A13.93 13.93 0 0024 38c7.73 0 14-6.27 14-14S31.73 10 24 10zm6.94 19.16c-.29.82-1.7 1.57-2.33 1.63-.6.06-1.17.28-3.94-.82-3.33-1.32-5.48-4.73-5.65-4.95-.16-.22-1.36-1.81-1.36-3.45 0-1.64.86-2.44 1.16-2.77.29-.33.64-.41.86-.41.21 0 .43 0 .62.01.2.01.47-.08.73.56.29.68.97 2.37 1.06 2.54.09.17.14.37.03.59-.11.22-.17.35-.33.54-.16.19-.34.42-.48.56-.16.17-.33.34-.14.67.19.33.84 1.39 1.8 2.25 1.24 1.11 2.29 1.46 2.62 1.62.33.17.53.14.72-.08.2-.22.84-.98 1.06-1.32.22-.33.43-.28.73-.17.29.11 1.86.88 2.18 1.04.33.17.55.25.63.39.08.14.08.8-.2 1.62z" fill="#fff"/>
+      </svg>
+      <h2>WhatsApp Web</h2>
+      <p>Send and receive messages without keeping your phone online.<br/>Use WhatsApp on up to 4 linked devices.</p>
+      <div class="lock-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Your personal messages are end-to-end encrypted
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('searchInput').addEventListener('input', function(){
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.contact-item').forEach(el => {
+      el.style.display = el.querySelector('.contact-name').textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>

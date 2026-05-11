@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WhatsApp – Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Nunito',sans-serif;background:#111b21;min-height:100vh;display:flex;align-items:center;justify-content:center}
+  .card{background:#202c33;border-radius:16px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+  .logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center}
+  .logo svg{width:48px;height:48px}
+  .logo-text{font-size:26px;font-weight:800;color:#e9edef;letter-spacing:-.5px}
+  .logo-text span{color:#00a884}
+  h2{text-align:center;color:#e9edef;font-size:20px;margin-bottom:8px}
+  p.sub{text-align:center;color:#8696a0;font-size:13px;margin-bottom:28px}
+  .field{margin-bottom:16px}
+  label{display:block;color:#8696a0;font-size:12px;margin-bottom:6px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  input{width:100%;background:#2a3942;border:1.5px solid #2a3942;border-radius:10px;padding:13px 16px;color:#e9edef;font-size:15px;font-family:'Nunito',sans-serif;outline:none;transition:.2s}
+  input:focus{border-color:#00a884}
+  .btn{width:100%;background:#00a884;border:none;border-radius:10px;padding:14px;color:#fff;font-size:16px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:8px;transition:.2s;letter-spacing:.3px}
+  .btn:hover{background:#02b090}
+  .error{background:#3b1f1f;border:1px solid #ff4757;color:#ff4757;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;text-align:center}
+  .footer{text-align:center;margin-top:24px;color:#8696a0;font-size:13px}
+  .footer a{color:#00a884;text-decoration:none;font-weight:600}
+  .footer a:hover{text-decoration:underline}
+  .divider{border:none;border-top:1px solid #2a3942;margin:24px 0}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="24" fill="#00a884"/>
+      <path d="M24 10C16.27 10 10 16.27 10 24c0 2.49.67 4.82 1.84 6.84L10 38l7.37-1.81A13.93 13.93 0 0024 38c7.73 0 14-6.27 14-14S31.73 10 24 10zm6.94 19.16c-.29.82-1.7 1.57-2.33 1.63-.6.06-1.17.28-3.94-.82-3.33-1.32-5.48-4.73-5.65-4.95-.16-.22-1.36-1.81-1.36-3.45 0-1.64.86-2.44 1.16-2.77.29-.33.64-.41.86-.41.21 0 .43 0 .62.01.2.01.47-.08.73.56.29.68.97 2.37 1.06 2.54.09.17.14.37.03.59-.11.22-.17.35-.33.54-.16.19-.34.42-.48.56-.16.17-.33.34-.14.67.19.33.84 1.39 1.8 2.25 1.24 1.11 2.29 1.46 2.62 1.62.33.17.53.14.72-.08.2-.22.84-.98 1.06-1.32.22-.33.43-.28.73-.17.29.11 1.86.88 2.18 1.04.33.17.55.25.63.39.08.14.08.8-.2 1.62z" fill="#fff"/>
+    </svg>
+    <div class="logo-text">Whats<span>App</span></div>
+  </div>
+  <h2>Welcome back</h2>
+  <p class="sub">Sign in to continue chatting</p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Enter your username" autofocus required/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Enter your password" required/>
+    </div>
+    <button type="submit" class="btn">Sign In</button>
+  </form>
+  <hr class="divider"/>
+  <div class="footer">Don't have an account? <a href="{% url 'signup' %}">Sign up</a></div>
+</div>
+</body>
+</html>
