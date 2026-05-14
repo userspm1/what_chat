@@ -42,6 +42,6 @@ class Message(models.Model):
     
 
 class Formdata(models.Model):
-    name=models.CharField(20)
+    name=models.CharField(max_length=20)
     age=models.IntegerField()
     
