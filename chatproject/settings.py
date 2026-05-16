@@ -54,7 +54,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://what-chat-8mal.onrender.com",
+]
 ROOT_URLCONF = 'chatproject.urls'
 
 TEMPLATES = [
@@ -123,7 +125,8 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_CREDENTIALS=True
 CORS_ALLOW_METHODS=['GET','POST','PUT','DELETE']
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','what-chat-8mal.onrender.com']
+
 
 
 LANGUAGE_CODE = 'en-us'
