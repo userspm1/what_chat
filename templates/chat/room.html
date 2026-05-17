@@ -274,7 +274,7 @@
 
 <script>
   const roomName  = "{{ room_name }}";
-  const currentId = {{ current_user.id }};
+  const currentId = "{{current_user.id }}";
   const container = document.getElementById('messageContainer');
   const input     = document.getElementById('msgInput');
   let ctxMsgId = null, ctxIsMine = false;
@@ -282,7 +282,23 @@
   function scrollBottom(){ container.scrollTop = container.scrollHeight; }
   scrollBottom();
 
-  const ws = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
+const ws = new WebSocket(
+    `${protocol}://${window.location.host}/ws/chat/${roomName}/`
+);
+
+ws.onopen = () => {
+    console.log("WebSocket Connected");
+};
+
+ws.onerror = (e) => {
+    console.log("WebSocket Error", e);
+};
+
+ws.onclose = (e) => {
+    console.log("WebSocket Closed", e);
+};
   ws.onopen = () => ws.send(JSON.stringify({type:'read_receipt'}));
 
   ws.onmessage = function(e){

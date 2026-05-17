@@ -10,12 +10,13 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
 # chatproject/asgi.py
 import os
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chatproject.settings')
-
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
+from channels.security.websocket import AllowedHostsOriginValidator
 from importlib import import_module
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chatproject.settings')
 
 django_asgi_app = get_asgi_application()
 
@@ -26,14 +27,14 @@ websocket_urlpatterns = import_module(
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
 
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            websocket_urlpatterns
+    "websocket": AllowedHostsOriginValidator(
+        AuthMiddlewareStack(
+            URLRouter(
+                websocket_urlpatterns
+            )
         )
     ),
 })
-
-
 
 
 

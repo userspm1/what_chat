@@ -15,7 +15,7 @@ from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+import os
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -127,7 +127,7 @@ CORS_ALLOW_CREDENTIALS=True
 CORS_ALLOW_METHODS=['GET','POST','PUT','DELETE']
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost','what-chat-8mal.onrender.com']
 
-
+# Pra@1234
 
 LANGUAGE_CODE = 'en-us'
 
@@ -146,11 +146,21 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 ASGI_APPLICATION = 'chatproject.asgi.application'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [os.environ.get("REDIS_URL")],
+            },
+        },
+    }
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
